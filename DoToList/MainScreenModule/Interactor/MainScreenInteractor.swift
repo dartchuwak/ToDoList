@@ -1,0 +1,69 @@
+//
+//  MainScreenInteractor.swift
+//  DoToList
+//
+//  Created by Evgenii Mikhailov on 15.11.2024.
+//
+
+import Foundation
+import CoreData
+import UIKit
+
+protocol MainScreenInteractorProtocol {
+    func fetchTasks()
+    func loadTasks()
+}
+
+final class MainScreenInteractor: MainScreenInteractorProtocol {
+    
+    let api: APIProtocol = API() // DI
+    weak var presenter: MainScreenPresenterProtocol?
+    private var todos: [TaskModel] = []
+    
+    func fetchTasks() {
+        api.fetchData { [weak self] result in
+            switch result {
+            case .success(let data):
+                let decoder = JSONDecoder()
+                do {
+                    let todoResponse = try decoder.decode(TasksResponse.self, from: data)
+                    let todos = todoResponse.todos
+                    self?.todos = todos
+                    self?.presenter?.didFetchTasks(tasks: todos)
+                } catch {
+                    // Обрабатываем ошибку декодирования
+                    self?.presenter?.didFailToFetchTasks(error: error)
+                }
+            case .failure:
+                break
+            }
+        }
+        
+    }
+    
+    func loadTasks() {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            presenter?.didFailToLoadTasks(error: "Не удалось получить AppDelegate")
+            return
+        }
+        let context = appDelegate.persistentContainer.viewContext
+        let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+        
+        do {
+            let tasks = try context.fetch(fetchRequest)
+            let taskModels = tasks.map { taskEntity -> TaskModel in
+                        return TaskModel(
+                            id: taskEntity.id,
+                            desctiption: taskEntity.desctiption,
+                            todo: taskEntity.todo ?? "",
+                            completed: taskEntity.completed,
+                            userId: taskEntity.userId,
+                            date: taskEntity.date ?? ""
+                        )
+                    }
+            presenter?.didLoadTasks(tasks: taskModels)
+        } catch {
+            presenter?.didFailToLoadTasks(error: error.localizedDescription)
+        }
+    }
+}
