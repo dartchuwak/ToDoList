@@ -18,7 +18,7 @@ protocol MainScreenPresenterProtocol: AnyObject {
     func didLoadTasks(tasks: [TaskModel])
     func addNewTask()
     func didSelectTask(at index: Int)
-    func toggleComletion(at index: Int)
+    func toggleTaskCompletion(at index: Int)
     func tasksCount() -> String
 }
 
@@ -72,5 +72,12 @@ final class MainScreenPresenter: MainScreenPresenterProtocol {
     
     func tasksCount() -> String {
         return todos.count.description
+    }
+    
+    func toggleTaskCompletion(at index: Int) {
+        todos[index].completed.toggle()
+        let updatedTask = todos[index]
+        interactor?.updateTask(task: updatedTask)
+        view?.updateTableView(tasks: todos)
     }
 }

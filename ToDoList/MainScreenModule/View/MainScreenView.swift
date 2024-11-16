@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import CoreData
 
 protocol MainViewProtocol: AnyObject {
     func updateTableView(tasks: [TaskModel])
@@ -19,7 +20,17 @@ class MainScreenView: UIViewController {
         let tableView = UITableView()
         return tableView
     }()
-    let taskCountLabel = UILabel()
+    let taskCountLabel: UILabel = {
+        let view = UILabel()
+        view.textColor = .white
+        return view
+    }()
+    
+    let bottomView: UIView = {
+       let view = UIView()
+        view.backgroundColor = .bgGray
+        return view
+    }()
     
     let toolbar = UIToolbar()
     let searchBar = UISearchBar()
@@ -32,7 +43,8 @@ class MainScreenView: UIViewController {
         navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         navigationController?.navigationBar.prefersLargeTitles = true
         setupSearchBar()
-        setupToolbar()
+     //   setupToolbar()
+        setupView()
         setupTableView()
         // presenter?.fetchTasks()
         presenter?.loadTasks()
@@ -56,7 +68,7 @@ class MainScreenView: UIViewController {
             make.top.equalTo(searchBar.snp.bottom)
             make.leading.equalToSuperview()
             make.trailing.equalToSuperview()
-            make.bottom.equalTo(toolbar.snp.top)
+            make.bottom.equalTo(bottomView.snp.top)
         }
     }
     
@@ -97,22 +109,50 @@ class MainScreenView: UIViewController {
         textField.rightViewMode = .always
     }
     
+    private func setupView() {
+        let addButton = UIButton(type: .system)
+        addButton.addTarget(self, action: #selector(addNewTask), for: .touchUpInside)
+        addButton.setImage(UIImage(named: "add"), for: .normal)
+        bottomView.addSubview(addButton)
+        bottomView.addSubview(taskCountLabel)
+        view.addSubview(bottomView)
+        
+        addButton.snp.makeConstraints { make in
+            make.height.equalTo(24)
+            make.width.equalTo(24)
+            make.trailing.equalToSuperview().offset(-20)
+            make.top.equalToSuperview().offset(13)
+        }
+        
+        taskCountLabel.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.centerY.equalTo(addButton.snp.centerY)
+        }
+        
+        bottomView.snp.makeConstraints { make in
+            make.bottom.equalToSuperview()
+            make.trailing.leading.equalToSuperview()
+            make.height.equalTo(83)
+        }
+    }
+    
     private func setupToolbar() {
         let addButton = UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(addNewTask))
+        let clearButton = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(clearTasks))
         addButton.tintColor = .accent
+        clearButton.tintColor = .red
         taskCountLabel.text = presenter?.tasksCount()
         taskCountLabel.textColor = .white
         taskCountLabel.font = UIFont.systemFont(ofSize: 16)
         taskCountLabel.sizeToFit()
         let textItem = UIBarButtonItem(customView: taskCountLabel)
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        toolbar.items = [flexibleSpace, textItem, flexibleSpace, addButton]
+        toolbar.items = [clearButton, flexibleSpace, textItem, flexibleSpace, addButton]
         toolbar.isTranslucent = false
         toolbar.tintColor = .black
         toolbar.barTintColor = UIColor(named: "bgGray")
         toolbar.backgroundColor = .black
         view.addSubview(toolbar)
-        
         toolbar.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.height.equalTo(49)
@@ -122,6 +162,35 @@ class MainScreenView: UIViewController {
     
     @objc private func addNewTask() {
         presenter?.addNewTask()
+    }
+    
+    @objc private func clearTasks() {
+        clearCoreData()
+    }
+    
+    func clearCoreData() {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            print("Не удалось получить AppDelegate")
+            return
+        }
+        let context = appDelegate.persistentContainer.viewContext
+        let persistentStoreCoordinator = appDelegate.persistentContainer.persistentStoreCoordinator
+
+        // Получаем все сущности из модели
+         let entities = persistentStoreCoordinator.managedObjectModel.entities
+            for entity in entities {
+                guard let entityName = entity.name else { continue }
+                let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+                let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+
+                do {
+                    try context.execute(batchDeleteRequest)
+                    print("Успешно удалены данные из сущности \(entityName)")
+                } catch {
+                    print("Ошибка при удалении данных из сущности \(entityName): \(error)")
+                }
+            }
+        
     }
 }
 
@@ -155,12 +224,18 @@ extension MainScreenView: UISearchBarDelegate {
 extension MainScreenView: MainViewProtocol {
     func updateTableView(tasks: [TaskModel]) {
         tableView.reloadData()
-        taskCountLabel.text = tasks.count.description
+        taskCountLabel.text = String("\(tasks.count.description) задачи")
     }
     
     func showError(error: String) {
         let alert = UIAlertController(title: "Ошибка", message: error, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Ок", style: .default, handler: nil))
         present(alert, animated: true, completion: nil)
+    }
+}
+
+extension MainScreenView: TodoTableViewCellDelegate {
+    func didTapStatusImage(at indexPath: IndexPath) {
+        presenter?.toggleTaskCompletion(at: indexPath.row)
     }
 }

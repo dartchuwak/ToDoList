@@ -24,6 +24,8 @@ final class AddNewTaskInteractor: AddNewTaskInteractorProtocol {
         }
         let context = appDelegate.persistentContainer.viewContext
         let task = TaskEntity(context: context)
+        let id = Int.random(in: 1...1000)
+        task.id = Int16(id)
         task.todo = title
         task.desctiption = description
         task.date = date
@@ -34,6 +36,5 @@ final class AddNewTaskInteractor: AddNewTaskInteractorProtocol {
         } catch {
             presenter?.didFailToSaveTask(error: error.localizedDescription)
         }
-        
     }
 }

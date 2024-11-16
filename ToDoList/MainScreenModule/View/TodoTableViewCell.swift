@@ -9,8 +9,12 @@ import Foundation
 import UIKit
 import SnapKit
 
+protocol TodoTableViewCellDelegate: AnyObject {
+    func didTapStatusImage(at indexPath: IndexPath)
+}
+
 class TodoTableViewCell: UITableViewCell {
-    
+    weak var delegate: TodoTableViewCellDelegate?
     var presenter: MainScreenPresenterProtocol?
     var indexPath: IndexPath?
     
@@ -111,11 +115,17 @@ class TodoTableViewCell: UITableViewCell {
         titleLabel.text = task.todo
         dateLabel.text = task.date
         descriptionLabel.text = task.desctiption
-        completedIndicator.image = task.completed ? UIImage(named: "icon_done") : UIImage(named: "icon")
+        
+        let image = task.completed ? UIImage(named: "icon_done") : UIImage(named: "icon")
+        completedIndicator.image = image
         completedIndicator.tintColor = task.completed ? .green : .gray
+        
+        
     }
     
     @objc func toggleCompleted() {
+        guard let indexPath = indexPath else { return }
+        presenter?.toggleTaskCompletion(at: indexPath.row)
         print("tapped")
     }
 }

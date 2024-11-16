@@ -16,8 +16,8 @@ class TaskDetailsViewController: UIViewController {
     
     var presenter: TaskDetailsPresenterProtocol?
     
-    let titleLabel: UILabel = {
-        let label = UILabel()
+    let titleLabel: UITextField = {
+        let label = UITextField()
         label.text = "Add new task"
         label.textColor = UIColor(red: 0.955, green: 0.955, blue: 0.955, alpha: 1)
         label.font = UIFont.systemFont(ofSize: 34, weight: .bold)
@@ -36,14 +36,11 @@ class TaskDetailsViewController: UIViewController {
         return view
     }()
     
-    let descriptionLabel: UILabel = {
-        // Auto layout, variables, and unit scale are not yet supported
-        var view = UILabel()
+    let descriptionLabel: UITextField = {
+        var view = UITextField()
         view.frame = CGRect(x: 0, y: 0, width: 320, height: 66)
         view.textColor = UIColor(red: 0.955, green: 0.955, blue: 0.955, alpha: 1)
         view.font = UIFont(name: "SFPro-Regular", size: 16)
-        view.numberOfLines = 0
-        view.lineBreakMode = .byWordWrapping
         var paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineHeightMultiple = 1.15
         view.attributedText = NSMutableAttributedString(string: "Составить список необходимых продуктов для ужина. Не забыть проверить, что уже есть в холодильнике.", attributes: [NSAttributedString.Key.kern: -0.43, NSAttributedString.Key.paragraphStyle: paragraphStyle])
@@ -85,7 +82,6 @@ class TaskDetailsViewController: UIViewController {
     }
     
     private func setupNavigationBar() {
-        // Создаем кнопку
         let saveButton = UIBarButtonItem(
             title: "Сохранить",
             style: .plain,
@@ -97,7 +93,7 @@ class TaskDetailsViewController: UIViewController {
     }
     
     @objc private func saveButtonTapped() {
-        presenter?.didTapSave()
+        presenter?.updateTask(description: descriptionLabel.text ?? "", todo: titleLabel.text ?? "")
     }
 }
 
