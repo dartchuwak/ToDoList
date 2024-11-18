@@ -49,6 +49,10 @@ class MainScreenView: UIViewController {
         presenter?.fetchTasks()
         presenter?.loadTasks()
         tableView.register(TodoTableViewCell.self, forCellReuseIdentifier: TodoTableViewCell.identifier)
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+            tapGesture.cancelsTouchesInView = false // Разрешить другие взаимодействия
+            view.addGestureRecognizer(tapGesture)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -92,11 +96,7 @@ class MainScreenView: UIViewController {
         let addButton = UIButton(type: .system)
         addButton.addTarget(self, action: #selector(addNewTask), for: .touchUpInside)
         addButton.setImage(UIImage(named: "add"), for: .normal)
-        let clearButton = UIButton(type: .system)
-        clearButton.addTarget(self, action: #selector(clearTasks), for: .touchUpInside)
-        clearButton.setImage(UIImage(systemName: "trash"), for: .normal)
         bottomView.addSubview(addButton)
-        bottomView.addSubview(clearButton)
         bottomView.addSubview(taskCountLabel)
         view.addSubview(bottomView)
         
@@ -106,14 +106,7 @@ class MainScreenView: UIViewController {
             make.trailing.equalToSuperview().offset(-20)
             make.top.equalToSuperview().offset(13)
         }
-        
-        clearButton.snp.makeConstraints { make in
-            make.height.equalTo(24)
-            make.width.equalTo(24)
-            make.leading.equalToSuperview().offset(20)
-            make.top.equalToSuperview().offset(13)
-        }
-        
+    
         taskCountLabel.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.centerY.equalTo(addButton.snp.centerY)
@@ -127,28 +120,7 @@ class MainScreenView: UIViewController {
     }
     
     @objc private func addNewTask() { presenter?.addNewTask() }
-    @objc private func clearTasks() { clearCoreData() }
-    
-    
-    //Используется для отладки
-    func clearCoreData() {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let context = appDelegate.persistentContainer.viewContext
-        let persistentStoreCoordinator = appDelegate.persistentContainer.persistentStoreCoordinator
-        let entities = persistentStoreCoordinator.managedObjectModel.entities
-        for entity in entities {
-            guard let entityName = entity.name else { continue }
-            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
-            let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-            
-            do {
-                try context.execute(batchDeleteRequest)
-                print("Успешно удалены данные из сущности \(entityName)")
-            } catch {
-                print("Ошибка при удалении данных из сущности \(entityName): \(error)")
-            }
-        }
-    }
+    @objc private func dismissKeyboard() { view.endEditing(true) }
 }
 
 extension MainScreenView: UITableViewDelegate, UITableViewDataSource {

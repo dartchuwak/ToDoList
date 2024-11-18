@@ -14,7 +14,6 @@ protocol APIProtocol {
 final class API: APIProtocol {
     func fetchData(completion: @escaping (Result<Data, Error>) -> Void) {
         let url = URL(string: "https://dummyjson.com/todos")!
-        // Выполняем запрос в фоновом потоке
         DispatchQueue.global(qos: .background).async {
             do {
                 let data = try Data(contentsOf: url)
