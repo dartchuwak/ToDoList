@@ -10,31 +10,38 @@ import UIKit
 import CoreData
 
 protocol AddNewTaskInteractorProtocol: AnyObject {
-    func saveTask(title: String, description: String, date: String)
+    func saveTask(title: String, description: String)
 }
 
 final class AddNewTaskInteractor: AddNewTaskInteractorProtocol {
     weak var presenter: AddNewTaskPresenterProtocol?
     
-    
-    func saveTask(title: String, description: String, date: String) {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
-              presenter?.didFailToSaveTask(error: "Не удалось получить AppDelegate")
-            return
-        }
-        let context = appDelegate.persistentContainer.viewContext
-        let task = TaskEntity(context: context)
-        let id = Int.random(in: 1...1000)
-        task.id = Int16(id)
-        task.todo = title
-        task.desctiption = description
-        task.date = date
-        task.completed = false
-        do {
-            try context.save()
-            presenter?.didSaveTask()
-        } catch {
-            presenter?.didFailToSaveTask(error: error.localizedDescription)
+    func saveTask(title: String, description: String) {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let context = appDelegate.persistentContainer.newBackgroundContext()
+        
+        context.perform {
+            let task = TaskEntity(context: context)
+            let id = Int.random(in: 1...1000)
+            let date = Date()
+            let formatter = DateFormatter()
+            formatter.dateFormat = "dd/MM/yy"
+            let formattedDate = formatter.string(from: date)
+            task.id = Int16(id)
+            task.todo = title
+            task.desc = description
+            task.date = formattedDate
+            task.completed = false
+            do {
+                try context.save()
+                DispatchQueue.main.async {
+                    self.presenter?.didSaveTask()
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.presenter?.didFailToSaveTask(error: error.localizedDescription)
+                }
+            }
         }
     }
 }

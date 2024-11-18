@@ -13,7 +13,7 @@ struct TaskModel: Decodable {
     var todo: String
     var completed: Bool
     var userId: Int16
-    var date: String
+    var date: String?
 }
 
 struct TasksResponse: Decodable {

@@ -8,31 +8,48 @@
 import Foundation
 
 protocol MainScreenPresenterProtocol: AnyObject {
+    var todos: [TaskModel] { get }
     func didFetchTasks(tasks: [TaskModel])
     func fetchTasks()
     func didFailToFetchTasks(error: Error)
     func didFailToLoadTasks(error: String)
-    var todos: [TaskModel] { get }
     func todo(at index: Int) -> TaskModel
     func loadTasks()
     func didLoadTasks(tasks: [TaskModel])
     func addNewTask()
     func didSelectTask(at index: Int)
+    func didTapDeleteTask(at index: Int)
     func toggleTaskCompletion(at index: Int)
     func tasksCount() -> String
+    func perfomSearch(text: String)
+    func didSearchTasks(tasks: [TaskModel])
+    func didSaveTasks()
 }
 
 final class MainScreenPresenter: MainScreenPresenterProtocol {
-    
     func toggleComletion(at index: Int) {}
-    
     weak var view: MainViewProtocol?
     var interactor: MainScreenInteractorProtocol?
     var router: MainScreenRouterProtocol?
     var todos: [TaskModel] = []
+    var allTasks: [TaskModel] = []
+    
+    private func isFirstLaunch() -> Bool {
+        let userDefaults = UserDefaults.standard
+        let hasLaunchedKey = "hasLaunchedBefore"
+        
+        if !userDefaults.bool(forKey: hasLaunchedKey) {
+            userDefaults.set(true, forKey: hasLaunchedKey)
+            userDefaults.synchronize()
+            return true
+        }
+        return false
+    }
     
     func fetchTasks() {
-        interactor?.fetchTasks()
+        if isFirstLaunch() {
+            interactor?.fetchTasks()
+        }
     }
     
     func didFetchTasks(tasks: [TaskModel]) {
@@ -58,7 +75,9 @@ final class MainScreenPresenter: MainScreenPresenterProtocol {
     
     func didLoadTasks(tasks: [TaskModel]) {
         self.todos = tasks
+        self.allTasks = tasks // Cохраняю для восстановления после поиска
         view?.updateTableView(tasks: tasks)
+        view?.updateTaskCountLabel(count: todos.count)
     }
     
     func addNewTask() {
@@ -78,6 +97,34 @@ final class MainScreenPresenter: MainScreenPresenterProtocol {
         todos[index].completed.toggle()
         let updatedTask = todos[index]
         interactor?.updateTask(task: updatedTask)
+        view?.updateTableView(tasks: todos)
+    }
+    
+    func perfomSearch(text: String) {
+        if text.isEmpty {
+            todos = allTasks // Восстанавливаю после поиска
+            view?.updateTableView(tasks: todos)
+            view?.updateTaskCountLabel(count: todos.count)
+        } else {
+            interactor?.performSearch(text: text)
+        }
+    }
+    
+    func didSearchTasks(tasks: [TaskModel]) {
+        todos = tasks
+        view?.updateTableView(tasks: todos)
+        view?.updateTaskCountLabel(count: todos.count)
+    }
+    
+    func didTapDeleteTask(at index: Int) {
+        let task = todos[index]
+        todos.removeAll(where: {$0.id == task.id})
+        view?.updateTableView(tasks: todos)
+        interactor?.deleteTask(task: task)
+    }
+    
+    func didSaveTasks() {
+        loadTasks()
         view?.updateTableView(tasks: todos)
     }
 }

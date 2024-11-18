@@ -18,7 +18,6 @@ class TaskDetailsViewController: UIViewController {
     
     let titleLabel: UITextField = {
         let label = UITextField()
-        label.text = "Add new task"
         label.textColor = UIColor(red: 0.955, green: 0.955, blue: 0.955, alpha: 1)
         label.font = UIFont.systemFont(ofSize: 34, weight: .bold)
         return label
@@ -29,21 +28,15 @@ class TaskDetailsViewController: UIViewController {
         view.frame = CGRect(x: 0, y: 0, width: 51, height: 16)
         view.alpha = 0.5
         view.textColor = UIColor(red: 0.955, green: 0.955, blue: 0.955, alpha: 1)
-        view.font = UIFont(name: "SFProText-Regular", size: 12)
-        var paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineHeightMultiple = 1.12
-        view.attributedText = NSMutableAttributedString(string: "02/10/24", attributes: [NSAttributedString.Key.paragraphStyle: paragraphStyle])
+        view.font =  UIFont.systemFont(ofSize: 12, weight: .regular)
         return view
     }()
     
-    let descriptionLabel: UITextField = {
-        var view = UITextField()
+    let descriptionLabel: UITextView = {
+        var view = UITextView()
         view.frame = CGRect(x: 0, y: 0, width: 320, height: 66)
         view.textColor = UIColor(red: 0.955, green: 0.955, blue: 0.955, alpha: 1)
-        view.font = UIFont(name: "SFPro-Regular", size: 16)
-        var paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineHeightMultiple = 1.15
-        view.attributedText = NSMutableAttributedString(string: "Составить список необходимых продуктов для ужина. Не забыть проверить, что уже есть в холодильнике.", attributes: [NSAttributedString.Key.kern: -0.43, NSAttributedString.Key.paragraphStyle: paragraphStyle])
+        view.font =  UIFont.systemFont(ofSize: 16, weight: .regular)
         return view
     }()
 
@@ -100,6 +93,7 @@ class TaskDetailsViewController: UIViewController {
 extension TaskDetailsViewController: TaskDetailsViewProtocol {
     func displayTask(_ task: TaskModel) {
             titleLabel.text = task.todo
-            descriptionLabel.text = task.desctiption
+        descriptionLabel.text = task.desctiption
+        dateLabel.text = task.date
           }
 }

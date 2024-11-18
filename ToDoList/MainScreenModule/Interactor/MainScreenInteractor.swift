@@ -13,6 +13,8 @@ protocol MainScreenInteractorProtocol {
     func fetchTasks()
     func loadTasks()
     func updateTask(task: TaskModel)
+    func performSearch(text: String)
+    func deleteTask(task: TaskModel)
 }
 
 final class MainScreenInteractor: MainScreenInteractorProtocol {
@@ -30,62 +32,140 @@ final class MainScreenInteractor: MainScreenInteractorProtocol {
                     let todoResponse = try decoder.decode(TasksResponse.self, from: data)
                     let todos = todoResponse.todos
                     self?.todos = todos
-                    self?.presenter?.didFetchTasks(tasks: todos)
+                    self?.saveFetchedTasks(tasks: todos)
+                    DispatchQueue.main.async {
+                        self?.presenter?.didFetchTasks(tasks: todos)
+                    }
                 } catch {
-                    // Обрабатываем ошибку декодирования
-                    self?.presenter?.didFailToFetchTasks(error: error)
+                    DispatchQueue.main.async {
+                        self?.presenter?.didFailToFetchTasks(error: error)
+                    }
                 }
             case .failure:
-                break
+                return
             }
         }
+    }
+    
+    private func saveFetchedTasks(tasks: [TaskModel]) {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let context = appDelegate.persistentContainer.newBackgroundContext()
         
+        context.perform {
+            for todo in tasks {
+                do {
+                    let task = TaskEntity(context: context)
+                    let date = Date()
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "dd/MM/yy"
+                    let formattedDate = formatter.string(from: date)
+                    task.id = Int16(todo.id)
+                    task.todo = todo.todo
+                    task.desc = todo.desctiption
+                    task.date = formattedDate
+                    task.completed = todo.completed
+                    try context.save()
+                } catch { }
+            }
+        }
     }
     
     func loadTasks() {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
-            presenter?.didFailToLoadTasks(error: "Не удалось получить AppDelegate")
-            return
-        }
-        let context = appDelegate.persistentContainer.viewContext
-        let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
-        
-        do {
-            let tasks = try context.fetch(fetchRequest)
-            let taskModels = tasks.map { taskEntity -> TaskModel in
-                return TaskModel(
-                    id: taskEntity.id,
-                    desctiption: taskEntity.desctiption,
-                    todo: taskEntity.todo ?? "",
-                    completed: taskEntity.completed,
-                    userId: taskEntity.userId,
-                    date: taskEntity.date ?? ""
-                )
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let context = appDelegate.persistentContainer.newBackgroundContext()
+        context.perform {
+            let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+            do {
+                let tasks = try context.fetch(fetchRequest)
+                let taskModels = tasks.map { taskEntity -> TaskModel in
+                    return TaskModel(
+                        id: taskEntity.id,
+                        desctiption: taskEntity.desc,
+                        todo: taskEntity.todo ?? "",
+                        completed: taskEntity.completed,
+                        userId: taskEntity.userId,
+                        date: taskEntity.date ?? ""
+                    )
+                }
+                DispatchQueue.main.async {
+                    self.presenter?.didLoadTasks(tasks: taskModels)
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.presenter?.didFailToLoadTasks(error: error.localizedDescription)
+                }
             }
-            presenter?.didLoadTasks(tasks: taskModels)
-        } catch {
-            presenter?.didFailToLoadTasks(error: error.localizedDescription)
         }
     }
     
     func updateTask(task: TaskModel) {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
             print("Не удалось получить AppDelegate")
-            //  presenter?.didFailToUpdateTask(error: "Не удалось получить AppDelegate")
             return
         }
-        let context = appDelegate.persistentContainer.viewContext
-        let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", task.id.description)
-        do {
-            let results = try context.fetch(fetchRequest)
-            if let taskEntity = results.first {
-                taskEntity.completed = task.completed
-                try context.save()
+        let context = appDelegate.persistentContainer.newBackgroundContext()
+        context.perform {
+            let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "id == %@", task.id.description)
+            do {
+                let results = try context.fetch(fetchRequest)
+                if let taskEntity = results.first {
+                    taskEntity.completed = task.completed
+                    try context.save()
+                }
+            } catch {
+                print(error)
             }
-        } catch {
-            print(error)
-            //      presenter?.didFailToUpdateTask(error: error.localizedDescription)
+        }
+    }
+    
+    func performSearch(text: String) {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let backgroundContext = appDelegate.persistentContainer.newBackgroundContext()
+        
+        backgroundContext.perform {
+            let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "todo CONTAINS[cd] %@ OR desc CONTAINS[cd] %@", text, text)
+            
+            do {
+                let tasks = try backgroundContext.fetch(fetchRequest)
+                let taskModels = tasks.map { taskEntity -> TaskModel in
+                    return TaskModel(
+                        id: taskEntity.id,
+                        desctiption: taskEntity.desc,
+                        todo: taskEntity.todo ?? "",
+                        completed: taskEntity.completed,
+                        userId: taskEntity.userId,
+                        date: taskEntity.date ?? Date().description
+                    )
+                }
+                DispatchQueue.main.async {
+                    self.presenter?.didSearchTasks(tasks: taskModels)
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.presenter?.didFailToLoadTasks(error: error.localizedDescription)
+                }
+            }
+        }
+    }
+    
+    func deleteTask(task: TaskModel) {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let backgroundContext = appDelegate.persistentContainer.newBackgroundContext()
+        
+        backgroundContext.perform {
+            let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "id == %@", task.id.description)
+            do {
+                let results = try backgroundContext.fetch(fetchRequest)
+                if let taskEntity = results.first {
+                    backgroundContext.delete(taskEntity)
+                    try backgroundContext.save()
+                }
+            } catch {
+                print(error)
+            }
         }
     }
 }

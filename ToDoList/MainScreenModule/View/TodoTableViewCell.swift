@@ -15,19 +15,17 @@ protocol TodoTableViewCellDelegate: AnyObject {
 
 class TodoTableViewCell: UITableViewCell {
     weak var delegate: TodoTableViewCellDelegate?
-    var presenter: MainScreenPresenterProtocol?
     var indexPath: IndexPath?
-    
     static let identifier: String = "TodoTableViewCell"
-    // UI элементы
+    
+    let textView = UIView()
+    
     private let titleLabel: UILabel = {
         var view = UILabel()
         view.frame = CGRect(x: 0, y: 0, width: 288, height: 22)
         view.textColor = UIColor(red: 0.955, green: 0.955, blue: 0.955, alpha: 1)
-        view.font = UIFont(name: "SFPro-Medium", size: 16)
-        var paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineHeightMultiple = 1.15
-        view.attributedText = NSMutableAttributedString(string: "Уборка в квартире  ", attributes: [NSAttributedString.Key.kern: -0.43, NSAttributedString.Key.paragraphStyle: paragraphStyle])
+        view.font = .systemFont(ofSize: 16, weight: .semibold)
+        view.numberOfLines = 1
         return view
     }()
     
@@ -35,10 +33,8 @@ class TodoTableViewCell: UITableViewCell {
         var view = UILabel()
         view.frame = CGRect(x: 0, y: 0, width: 288, height: 16)
         view.textColor = UIColor(red: 0.955, green: 0.955, blue: 0.955, alpha: 1)
-        view.font = UIFont(name: "SFProText-Regular", size: 12)
-        var paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineHeightMultiple = 1.12
-        view.attributedText = NSMutableAttributedString(string: "Провести генеральную уборку в квартире", attributes: [NSAttributedString.Key.paragraphStyle: paragraphStyle])
+        view.font = .systemFont(ofSize: 12, weight: .regular)
+        view.numberOfLines = 2
         return view
     }()
     
@@ -47,10 +43,7 @@ class TodoTableViewCell: UITableViewCell {
         view.frame = CGRect(x: 0, y: 0, width: 288, height: 16)
         view.alpha = 0.5
         view.textColor = UIColor(red: 0.955, green: 0.955, blue: 0.955, alpha: 1)
-        view.font = UIFont(name: "SFProText-Regular", size: 12)
-        var paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineHeightMultiple = 1.12
-        view.attributedText = NSMutableAttributedString(string: "02/10/24", attributes: [NSAttributedString.Key.paragraphStyle: paragraphStyle])
+        view.font = .systemFont(ofSize: 12, weight: .regular)
         return view
     }()
     
@@ -62,7 +55,6 @@ class TodoTableViewCell: UITableViewCell {
         return imageView
     }()
     
-    // Инициализация ячейки
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
@@ -72,60 +64,108 @@ class TodoTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // Настройка интерфейса
     private func setupUI() {
         let tap = UITapGestureRecognizer(target: self, action: #selector(toggleCompleted))
         completedIndicator.addGestureRecognizer(tap)
         backgroundColor = .clear
-        contentView.addSubview(titleLabel)
-        contentView.addSubview(descriptionLabel)
-        contentView.addSubview(dateLabel)
+        
+        textView.addSubview(titleLabel)
+        textView.addSubview(descriptionLabel)
+        textView.addSubview(dateLabel)
+        
         contentView.addSubview(completedIndicator)
+        contentView.addSubview(textView)
         
         completedIndicator.snp.makeConstraints { make in
             make.width.equalTo(24)
-            make.height.equalTo(48)
+            make.height.equalTo(24)
             make.leading.equalToSuperview().offset(20)
+            make.top.equalToSuperview().offset(10)
+        }
+        
+        textView.snp.makeConstraints { make in
             make.top.equalToSuperview()
+            make.leading.equalTo(completedIndicator.snp.trailing)
+            make.trailing.equalToSuperview().offset(-12)
+            make.bottom.equalToSuperview()
         }
         
         titleLabel.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(12)
-            make.leading.equalTo(completedIndicator.snp.trailing).offset(8)
-            make.trailing.equalToSuperview().offset(-20)
+            make.top.equalTo(textView.snp.top).offset(12)
+            make.leading.equalToSuperview().offset(8)
+            make.trailing.equalToSuperview().offset(-8)
         }
         
         descriptionLabel.snp.makeConstraints { make in
-            make.leading.equalTo(titleLabel.snp.leading)
             make.top.equalTo(titleLabel.snp.bottom).offset(6)
-            make.trailing.equalToSuperview().offset(-20)
+            make.leading.equalToSuperview().offset(8)
+            make.trailing.equalToSuperview().offset(-8)
         }
         
         dateLabel.snp.makeConstraints { make in
-            make.leading.equalTo(titleLabel.snp.leading)
             make.top.equalTo(descriptionLabel.snp.bottom).offset(6)
+            make.leading.equalToSuperview().offset(8)
             make.bottom.equalToSuperview().offset(-12)
-            make.trailing.equalToSuperview().offset(-20)
+            make.trailing.equalToSuperview().offset(-8)
         }
     }
     
-    func configure(with task: TaskModel, at indexPath: IndexPath, presenter: MainScreenPresenterProtocol) {
+    func updateSnapKit() {
+        titleLabel.snp.updateConstraints { make in
+            make.top.equalTo(textView.snp.top).offset(12)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+        }
+        
+        descriptionLabel.snp.updateConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(6)
+            make.leading.equalToSuperview().offset(16)
+            make.trailing.equalToSuperview().offset(-16)
+        }
+        
+        dateLabel.snp.updateConstraints { make in
+            make.top.equalTo(descriptionLabel.snp.bottom).offset(6)
+            make.leading.equalToSuperview().offset(16)
+            make.bottom.equalToSuperview().offset(-12)
+            make.trailing.equalToSuperview().offset(-16)
+        }
+    }
+    
+    func resetSnapKit() {
+        titleLabel.snp.updateConstraints { make in
+            make.top.equalTo(textView.snp.top).offset(12)
+            make.leading.equalToSuperview().offset(8)
+            make.trailing.equalToSuperview().offset(-8)
+        }
+        
+        descriptionLabel.snp.updateConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(6)
+            make.leading.equalToSuperview().offset(8)
+            make.trailing.equalToSuperview().offset(-8)
+        }
+        
+        dateLabel.snp.updateConstraints { make in
+            make.top.equalTo(descriptionLabel.snp.bottom).offset(6)
+            make.leading.equalToSuperview().offset(8)
+            make.bottom.equalToSuperview().offset(-12)
+            make.trailing.equalToSuperview().offset(-8)
+        }
+    }
+    
+    func configure(with task: TaskModel, at indexPath: IndexPath) {
         self.indexPath = indexPath
-        self.presenter = presenter
         titleLabel.text = task.todo
         dateLabel.text = task.date
         descriptionLabel.text = task.desctiption
-        
-        let image = task.completed ? UIImage(named: "icon_done") : UIImage(named: "icon")
+        let image = task.completed ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle")
         completedIndicator.image = image
-        completedIndicator.tintColor = task.completed ? .green : .gray
-        
-        
+        completedIndicator.tintColor = task.completed ? .accent : .gray
+        titleLabel.textColor = task.completed ? .lightGray : .white
+        descriptionLabel.textColor = task.completed ? .lightGray : .white
     }
     
     @objc func toggleCompleted() {
         guard let indexPath = indexPath else { return }
-        presenter?.toggleTaskCompletion(at: indexPath.row)
-        print("tapped")
+        delegate?.didTapStatusImage(at: indexPath)
     }
 }

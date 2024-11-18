@@ -11,6 +11,7 @@ import SnapKit
 protocol AddNewTaskViewProtocol: AnyObject {
     func showSuccess()
     func showError(_ message: String)
+    func setDate(date: String)
 }
 
 class AddNewTaskScreenViewController: UIViewController {
@@ -45,7 +46,6 @@ class AddNewTaskScreenViewController: UIViewController {
             string: "Описание",
             attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray, NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16, weight: .regular)]
         )
-        view.font = UIFont(name: "SFPro-Regular", size: 16)
         return view
     }()
 
@@ -55,7 +55,7 @@ class AddNewTaskScreenViewController: UIViewController {
         addSubviews()
         setupConstraints()
         setupNavigationBar()
-        setDate()
+        presenter?.prepareDate()
     }
     
     private func addSubviews() {
@@ -64,10 +64,6 @@ class AddNewTaskScreenViewController: UIViewController {
         view.addSubview(descriptionTextField)
     }
     
-    private func setDate() {
-        let date = Date()
-        dateLabel.text = date.description
-    }
     private func setupConstraints() {
         titleTextField.snp.makeConstraints { make in
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top).offset(8)
@@ -103,6 +99,10 @@ class AddNewTaskScreenViewController: UIViewController {
 }
 
 extension AddNewTaskScreenViewController: AddNewTaskViewProtocol {
+    func setDate(date: String) {
+        self.dateLabel.text = date
+    }
+    
     func showSuccess() {
         print("Success save")
     }

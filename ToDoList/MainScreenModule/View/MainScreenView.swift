@@ -11,29 +11,30 @@ import CoreData
 
 protocol MainViewProtocol: AnyObject {
     func updateTableView(tasks: [TaskModel])
+    func updateTaskCountLabel(count: Int)
     func showError(error: String)
 }
 
 class MainScreenView: UIViewController {
     var presenter: MainScreenPresenterProtocol?
-    var tableView: UITableView = {
+    private var tableView: UITableView = {
         let tableView = UITableView()
         return tableView
     }()
-    let taskCountLabel: UILabel = {
+    private let taskCountLabel: UILabel = {
         let view = UILabel()
         view.textColor = .white
         return view
     }()
     
-    let bottomView: UIView = {
-       let view = UIView()
+    private let bottomView: UIView = {
+        let view = UIView()
         view.backgroundColor = .bgGray
         return view
     }()
     
-    let toolbar = UIToolbar()
-    let searchBar = UISearchBar()
+    private let toolbar = UIToolbar()
+    private let searchBar = UISearchBar()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,10 +44,9 @@ class MainScreenView: UIViewController {
         navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         navigationController?.navigationBar.prefersLargeTitles = true
         setupSearchBar()
-     //   setupToolbar()
         setupView()
         setupTableView()
-        // presenter?.fetchTasks()
+        presenter?.fetchTasks()
         presenter?.loadTasks()
         tableView.register(TodoTableViewCell.self, forCellReuseIdentifier: TodoTableViewCell.identifier)
     }
@@ -63,7 +63,6 @@ class MainScreenView: UIViewController {
         tableView.separatorColor = .lightGray
         tableView.separatorInset = .init(top: 0, left: 20, bottom: 0, right: 20)
         view.addSubview(tableView)
-        
         tableView.snp.makeConstraints { make in
             make.top.equalTo(searchBar.snp.bottom)
             make.leading.equalToSuperview()
@@ -76,44 +75,28 @@ class MainScreenView: UIViewController {
         searchBar.delegate = self
         searchBar.tintColor = .lightGray
         searchBar.searchBarStyle = .minimal
+        searchBar.searchTextField.clearButtonMode = .whileEditing
         searchBar.searchTextField.backgroundColor = UIColor(named: "bgGray")
         searchBar.searchTextField.textColor = .lightGray
-        
-        let micImage = UIImage(systemName: "circle")
-        let imageView:UIImageView = UIImageView(image: micImage)
-        searchBar.searchTextField.rightView = imageView
-        searchBar.searchTextField.rightViewMode = .always
         searchBar.searchTextField.leftView?.tintColor = .lightGray
-        searchBar.searchTextField.rightView?.tintColor = .lightGray
         view.addSubview(searchBar)
         
         searchBar.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
             make.leading.trailing.equalToSuperview()
+            make.height.equalTo(36)
         }
-        customizeSearchBar()
-    }
-    
-    private func customizeSearchBar() {
-        let textField = searchBar.searchTextField
-        addMicrophoneIcon(to: textField)
-    }
-    
-    private func addMicrophoneIcon(to textField: UITextField) {
-        let micButton = UIButton(type: .custom)
-        let micImage = UIImage(systemName: "microphone")
-        micButton.setImage(micImage, for: .normal)
-        micButton.tintColor = UIColor.white
-        micButton.frame = CGRect(x: 0, y: 0, width: 24, height: 24)
-        textField.rightView = micButton
-        textField.rightViewMode = .always
     }
     
     private func setupView() {
         let addButton = UIButton(type: .system)
         addButton.addTarget(self, action: #selector(addNewTask), for: .touchUpInside)
         addButton.setImage(UIImage(named: "add"), for: .normal)
+        let clearButton = UIButton(type: .system)
+        clearButton.addTarget(self, action: #selector(clearTasks), for: .touchUpInside)
+        clearButton.setImage(UIImage(systemName: "trash"), for: .normal)
         bottomView.addSubview(addButton)
+        bottomView.addSubview(clearButton)
         bottomView.addSubview(taskCountLabel)
         view.addSubview(bottomView)
         
@@ -121,6 +104,13 @@ class MainScreenView: UIViewController {
             make.height.equalTo(24)
             make.width.equalTo(24)
             make.trailing.equalToSuperview().offset(-20)
+            make.top.equalToSuperview().offset(13)
+        }
+        
+        clearButton.snp.makeConstraints { make in
+            make.height.equalTo(24)
+            make.width.equalTo(24)
+            make.leading.equalToSuperview().offset(20)
             make.top.equalToSuperview().offset(13)
         }
         
@@ -136,61 +126,28 @@ class MainScreenView: UIViewController {
         }
     }
     
-    private func setupToolbar() {
-        let addButton = UIBarButtonItem(barButtonSystemItem: .compose, target: self, action: #selector(addNewTask))
-        let clearButton = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(clearTasks))
-        addButton.tintColor = .accent
-        clearButton.tintColor = .red
-        taskCountLabel.text = presenter?.tasksCount()
-        taskCountLabel.textColor = .white
-        taskCountLabel.font = UIFont.systemFont(ofSize: 16)
-        taskCountLabel.sizeToFit()
-        let textItem = UIBarButtonItem(customView: taskCountLabel)
-        let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        toolbar.items = [clearButton, flexibleSpace, textItem, flexibleSpace, addButton]
-        toolbar.isTranslucent = false
-        toolbar.tintColor = .black
-        toolbar.barTintColor = UIColor(named: "bgGray")
-        toolbar.backgroundColor = .black
-        view.addSubview(toolbar)
-        toolbar.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
-            make.height.equalTo(49)
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
-        }
-    }
+    @objc private func addNewTask() { presenter?.addNewTask() }
+    @objc private func clearTasks() { clearCoreData() }
     
-    @objc private func addNewTask() {
-        presenter?.addNewTask()
-    }
     
-    @objc private func clearTasks() {
-        clearCoreData()
-    }
-    
+    //Используется для отладки
     func clearCoreData() {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
-            print("Не удалось получить AppDelegate")
-            return
-        }
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         let context = appDelegate.persistentContainer.viewContext
         let persistentStoreCoordinator = appDelegate.persistentContainer.persistentStoreCoordinator
-
-        // Получаем все сущности из модели
-         let entities = persistentStoreCoordinator.managedObjectModel.entities
-            for entity in entities {
-                guard let entityName = entity.name else { continue }
-                let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
-                let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-
-                do {
-                    try context.execute(batchDeleteRequest)
-                    print("Успешно удалены данные из сущности \(entityName)")
-                } catch {
-                    print("Ошибка при удалении данных из сущности \(entityName): \(error)")
-                }
+        let entities = persistentStoreCoordinator.managedObjectModel.entities
+        for entity in entities {
+            guard let entityName = entity.name else { continue }
+            let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+            let batchDeleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+            
+            do {
+                try context.execute(batchDeleteRequest)
+                print("Успешно удалены данные из сущности \(entityName)")
+            } catch {
+                print("Ошибка при удалении данных из сущности \(entityName): \(error)")
             }
-        
+        }
     }
 }
 
@@ -205,26 +162,65 @@ extension MainScreenView: UITableViewDelegate, UITableViewDataSource {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: TodoTableViewCell.identifier, for: indexPath) as? TodoTableViewCell else { return UITableViewCell() }
         guard let presenter else { return UITableViewCell() }
         let task = presenter.todo(at: indexPath.row)
-        cell.configure(with: task , at: indexPath, presenter: presenter)
+        cell.configure(with: task , at: indexPath)
         cell.selectionStyle = .none
+        cell.delegate = self
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         presenter?.didSelectTask(at: indexPath.row)
     }
+    
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        let index = indexPath.row
+        let identifier = "\(index)" as NSString
+        
+        return UIContextMenuConfiguration(identifier: identifier, previewProvider: nil) { _ in
+            let editAction = UIAction(title: "Редактировать", image: UIImage(systemName: "pencil")) { _ in
+                self.presenter?.didSelectTask(at: index)
+            }
+            let shareAction = UIAction(title: "Поделиться", image: UIImage(systemName: "square.and.arrow.up")) { _ in
+                print("Поделиться задачей")
+            }
+            let deleteAction = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                self.presenter?.didTapDeleteTask(at: index)
+            }
+            return UIMenu(title: "", children: [editAction, shareAction, deleteAction])
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration) -> UITargetedPreview? {
+        guard let identifier = configuration.identifier as? String else { return nil }
+        guard let cell = tableView.cellForRow(at: .init(row: Int(identifier) ?? 0, section: 0)) as? TodoTableViewCell else { return nil }
+        let parameters = UIPreviewParameters()
+        return UITargetedPreview(view: cell.textView, parameters: parameters)
+    }
+    
+    func tableView( _ tableView: UITableView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration ) -> UITargetedPreview? {
+        guard let cell = tableView.cellForRow(at: .init(row: 0, section: 0)) as? TodoTableViewCell else { return nil }
+        //  cell.resetSnapKit()
+        cell.setNeedsLayout()
+        cell.layoutIfNeeded()
+        tableView.setNeedsLayout()
+        tableView.layoutIfNeeded()
+        return nil
+    }
 }
 
 extension MainScreenView: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        //   presenter?.fetchData(searchText: searchText)
+        presenter?.perfomSearch(text: searchText)
     }
 }
 
 extension MainScreenView: MainViewProtocol {
     func updateTableView(tasks: [TaskModel]) {
         tableView.reloadData()
-        taskCountLabel.text = String("\(tasks.count.description) задачи")
+    }
+    
+    func updateTaskCountLabel(count: Int) {
+        taskCountLabel.text = String("\(count.description) задачи")
     }
     
     func showError(error: String) {
