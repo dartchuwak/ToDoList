@@ -61,7 +61,7 @@ final class MainScreenInteractor: MainScreenInteractorProtocol {
                     let formattedDate = formatter.string(from: date)
                     task.id = Int16(todo.id)
                     task.todo = todo.todo
-                    task.desc = todo.desctiption
+                    task.desc = todo.description
                     task.date = formattedDate
                     task.completed = todo.completed
                     try context.save()
@@ -80,7 +80,7 @@ final class MainScreenInteractor: MainScreenInteractorProtocol {
                 let taskModels = tasks.map { taskEntity -> TaskModel in
                     return TaskModel(
                         id: taskEntity.id,
-                        desctiption: taskEntity.desc,
+                        description: taskEntity.desc,
                         todo: taskEntity.todo ?? "",
                         completed: taskEntity.completed,
                         userId: taskEntity.userId,
@@ -132,7 +132,7 @@ final class MainScreenInteractor: MainScreenInteractorProtocol {
                 let taskModels = tasks.map { taskEntity -> TaskModel in
                     return TaskModel(
                         id: taskEntity.id,
-                        desctiption: taskEntity.desc,
+                        description: taskEntity.desc,
                         todo: taskEntity.todo ?? "",
                         completed: taskEntity.completed,
                         userId: taskEntity.userId,

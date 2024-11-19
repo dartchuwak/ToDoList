@@ -9,7 +9,7 @@ import Foundation
 
 struct TaskModel: Decodable {
     var id: Int16
-    var desctiption: String?
+    var description: String?
     var todo: String
     var completed: Bool
     var userId: Int16

@@ -1,0 +1,33 @@
+{
+  "sourceLanguage" : "ru",
+  "strings" : {
+    "Задачи" : {
+      "comment" : "main"
+    },
+    "Название" : {
+      "comment" : "newTask"
+    },
+    "Ок" : {
+      "comment" : "addTask"
+    },
+    "Описание" : {
+      "comment" : "newTask"
+    },
+    "Ошибка сохранения" : {
+      "comment" : "addTask"
+    },
+    "Поделиться" : {
+      "comment" : "contex"
+    },
+    "Редактировать" : {
+      "comment" : "contex"
+    },
+    "Сохранить" : {
+      "comment" : "addTask\ndetails"
+    },
+    "Удалить" : {
+      "comment" : "contex"
+    }
+  },
+  "version" : "1.0"
+}

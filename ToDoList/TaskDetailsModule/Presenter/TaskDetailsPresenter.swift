@@ -9,7 +9,7 @@ import Foundation
 
 protocol TaskDetailsPresenterProtocol: AnyObject {
     func viewDidLoad()
-    func updateTask(description: String, todo: String)
+    func updateTask(description: String?, todo: String?)
     func didFailToUpdateTask(error: String)
 }
 
@@ -27,12 +27,10 @@ final class TaskDetailsPresenter: TaskDetailsPresenterProtocol {
         view?.displayTask(task)
     }
     
-    
-    func updateTask(description: String, todo: String) {
-        self.task.desctiption = description
-        self.task.todo = todo
+    func updateTask(description: String?, todo: String?) {
+        self.task.description = description ?? ""
+        self.task.todo = todo ?? ""
         interactor?.updateTask(task: self.task)
-       // view?.updateTableView(tasks: todos)
     }
     
     func didFailToUpdateTask(error: String) {

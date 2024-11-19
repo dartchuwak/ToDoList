@@ -20,10 +20,7 @@ class AddNewTaskScreenViewController: UIViewController {
     
     let titleTextField: UITextField = {
         let view = UITextField()
-        view.attributedPlaceholder = NSAttributedString(
-            string: "Название",
-            attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray]
-        )
+        view.placeholder = NSLocalizedString("Название", comment: "newTask")
         view.textColor = UIColor(red: 0.955, green: 0.955, blue: 0.955, alpha: 1)
         view.font = UIFont.systemFont(ofSize: 34, weight: .bold)
         return view
@@ -34,24 +31,23 @@ class AddNewTaskScreenViewController: UIViewController {
         view.frame = CGRect(x: 0, y: 0, width: 51, height: 16)
         view.alpha = 0.5
         view.textColor = UIColor(red: 0.955, green: 0.955, blue: 0.955, alpha: 1)
-        view.font = UIFont(name: "SFProText-Regular", size: 12)
+        view.font = .systemFont(ofSize: 12, weight: .regular)
         return view
     }()
     
-    let descriptionTextField: UITextField = {
-        var view = UITextField()
+    let descriptionTextField: UITextView = {
+        var view = UITextView()
         view.frame = CGRect(x: 0, y: 0, width: 320, height: 66)
-        view.textColor = UIColor(red: 0.955, green: 0.955, blue: 0.955, alpha: 1)
-        view.attributedPlaceholder = NSAttributedString(
-            string: "Описание",
-            attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray, NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16, weight: .regular)]
-        )
+        view.text = NSLocalizedString("Описание", comment: "newTask")
+        view.font = .systemFont(ofSize: 16, weight: .regular)
+        view.textColor = .white
+        view.backgroundColor = .clear
         return view
     }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor(named: "bg")
+        view.backgroundColor = .bg
         addSubviews()
         setupConstraints()
         setupNavigationBar()
@@ -79,12 +75,13 @@ class AddNewTaskScreenViewController: UIViewController {
             make.top.equalTo(dateLabel.snp.bottom).offset(10)
             make.leading.equalToSuperview().offset(20)
             make.trailing.equalToSuperview().offset(-20)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
         }
     }
     
     private func setupNavigationBar() {
         let saveButton = UIBarButtonItem(
-            title: "Сохранить",
+            title: NSLocalizedString("Сохранить", comment: "addTask"),
             style: .plain,
             target: self,
             action: #selector(saveButtonTapped)
@@ -94,7 +91,7 @@ class AddNewTaskScreenViewController: UIViewController {
     }
     
     @objc private func saveButtonTapped() {
-        presenter?.saveNewTask(title: titleTextField.text ?? "", description: descriptionTextField.text ?? "")
+        presenter?.saveNewTask(title: titleTextField.text, description: descriptionTextField.text)
     }
 }
 
@@ -108,8 +105,8 @@ extension AddNewTaskScreenViewController: AddNewTaskViewProtocol {
     }
     
     func showError(_ message: String) {
-        let alert = UIAlertController(title: "Ошибка сохранения", message: message, preferredStyle: .alert)
-               alert.addAction(UIAlertAction(title: "Ок", style: .default, handler: nil))
+        let alert = UIAlertController(title: NSLocalizedString("Ошибка сохранения", comment: "addTask"), message: message, preferredStyle: .alert)
+               alert.addAction(UIAlertAction(title: NSLocalizedString("Ок", comment: "addTask"), style: .default, handler: nil))
                present(alert, animated: true, completion: nil)
     }
     

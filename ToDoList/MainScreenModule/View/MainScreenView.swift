@@ -38,8 +38,8 @@ class MainScreenView: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor(named: "bg")
-        self.title = "Задачи"
+        view.backgroundColor = .bg
+        self.title = NSLocalizedString("Задачи", comment: "main")
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -80,7 +80,7 @@ class MainScreenView: UIViewController {
         searchBar.tintColor = .lightGray
         searchBar.searchBarStyle = .minimal
         searchBar.searchTextField.clearButtonMode = .whileEditing
-        searchBar.searchTextField.backgroundColor = UIColor(named: "bgGray")
+        searchBar.searchTextField.backgroundColor = .bgGray
         searchBar.searchTextField.textColor = .lightGray
         searchBar.searchTextField.leftView?.tintColor = .lightGray
         view.addSubview(searchBar)
@@ -95,7 +95,7 @@ class MainScreenView: UIViewController {
     private func setupView() {
         let addButton = UIButton(type: .system)
         addButton.addTarget(self, action: #selector(addNewTask), for: .touchUpInside)
-        addButton.setImage(UIImage(named: "add"), for: .normal)
+        addButton.setImage(UIImage(named: Images.add), for: .normal)
         bottomView.addSubview(addButton)
         bottomView.addSubview(taskCountLabel)
         view.addSubview(bottomView)
@@ -149,13 +149,13 @@ extension MainScreenView: UITableViewDelegate, UITableViewDataSource {
         let identifier = "\(index)" as NSString
         
         return UIContextMenuConfiguration(identifier: identifier, previewProvider: nil) { _ in
-            let editAction = UIAction(title: "Редактировать", image: UIImage(systemName: "pencil")) { _ in
+            let editAction = UIAction(title: NSLocalizedString("Редактировать", comment: "contex"), image: UIImage(systemName: Images.edit)) { _ in
                 self.presenter?.didSelectTask(at: index)
             }
-            let shareAction = UIAction(title: "Поделиться", image: UIImage(systemName: "square.and.arrow.up")) { _ in
+            let shareAction = UIAction(title: NSLocalizedString("Поделиться", comment: "contex"), image: UIImage(systemName: Images.export)) { _ in
                 print("Поделиться задачей")
             }
-            let deleteAction = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+            let deleteAction = UIAction(title: NSLocalizedString("Удалить", comment: "contex"), image: UIImage(systemName: Images.trash), attributes: .destructive) { _ in
                 self.presenter?.didTapDeleteTask(at: index)
             }
             return UIMenu(title: "", children: [editAction, shareAction, deleteAction])
@@ -171,7 +171,6 @@ extension MainScreenView: UITableViewDelegate, UITableViewDataSource {
     
     func tableView( _ tableView: UITableView, previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration ) -> UITargetedPreview? {
         guard let cell = tableView.cellForRow(at: .init(row: 0, section: 0)) as? TodoTableViewCell else { return nil }
-        //  cell.resetSnapKit()
         cell.setNeedsLayout()
         cell.layoutIfNeeded()
         tableView.setNeedsLayout()
@@ -192,7 +191,7 @@ extension MainScreenView: MainViewProtocol {
     }
     
     func updateTaskCountLabel(count: Int) {
-        taskCountLabel.text = String("\(count.description) задачи")
+        taskCountLabel.text = "\(count.description) задач"
     }
     
     func showError(error: String) {

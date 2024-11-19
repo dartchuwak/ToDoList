@@ -26,7 +26,7 @@ final class TaskDetailsInteractor: TaskDetailsInteractorProtocol {
             do {
                 let results = try context.fetch(fetchRequest)
                 if let taskEntity = results.first {
-                    taskEntity.desc = task.desctiption
+                    taskEntity.desc = task.description
                     taskEntity.todo = task.todo
                     try context.save()
                 }

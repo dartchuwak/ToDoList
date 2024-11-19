@@ -8,7 +8,7 @@
 import Foundation
 
 protocol AddNewTaskPresenterProtocol: AnyObject {
-    func saveNewTask(title: String, description: String)
+    func saveNewTask(title: String?, description: String?)
     func didSaveTask()
     func didFailToSaveTask(error: String)
     func prepareDate()
@@ -19,8 +19,8 @@ final class AddNewTaskPresenter: AddNewTaskPresenterProtocol {
     var interactor: AddNewTaskInteractorProtocol?
     var router: AddNewTaskRouterProtocol?
     
-    func saveNewTask(title: String, description: String) {
-        interactor?.saveTask(title: title, description: description)
+    func saveNewTask(title: String?, description: String?) {
+        interactor?.saveTask(title: title ?? "", description: description ?? "")
     }
     
     func didSaveTask() {

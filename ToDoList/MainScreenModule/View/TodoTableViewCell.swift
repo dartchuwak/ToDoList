@@ -156,8 +156,8 @@ class TodoTableViewCell: UITableViewCell {
         self.indexPath = indexPath
         titleLabel.text = task.todo
         dateLabel.text = task.date
-        descriptionLabel.text = task.desctiption
-        let image = task.completed ? UIImage(systemName: "checkmark.circle") : UIImage(systemName: "circle")
+        descriptionLabel.text = task.description
+        let image = task.completed ? UIImage(systemName: Images.checkmark) : UIImage(systemName: Images.circle)
         completedIndicator.image = image
         completedIndicator.tintColor = task.completed ? .accent : .gray
         titleLabel.textColor = task.completed ? .lightGray : .white
