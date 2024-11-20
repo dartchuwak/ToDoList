@@ -8,23 +8,28 @@
 import Foundation
 import CoreData
 
-class TestCoreDataTestStack {
+protocol CoreDataStackProtocol {
+    var mainContext: NSManagedObjectContext { get }
+    func newBackgroundContext() -> NSManagedObjectContext
+}
+
+class CoreDataStack: CoreDataStackProtocol {
     let persistentContainer: NSPersistentContainer
-
-    init() {
-        persistentContainer = NSPersistentContainer(name: "DoToList") // Replace with your actual model name
-        let description = NSPersistentStoreDescription()
-        description.type = NSInMemoryStoreType
-        persistentContainer.persistentStoreDescriptions = [description]
-
+    
+    init(modelName: String) {
+        persistentContainer = NSPersistentContainer(name: modelName)
         persistentContainer.loadPersistentStores { description, error in
             if let error = error {
-                fatalError("Failed to load in-memory store: \(error)")
+                fatalError("Ошибка при загрузке хранилища: \(error)")
             }
         }
     }
-
-    var managedContext: NSManagedObjectContext {
+    
+    var mainContext: NSManagedObjectContext {
         return persistentContainer.viewContext
+    }
+    
+    func newBackgroundContext() -> NSManagedObjectContext {
+        return persistentContainer.newBackgroundContext()
     }
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct TaskModel: Decodable {
+struct TaskModel: Codable {
     var id: Int16
     var description: String?
     var todo: String
@@ -16,7 +16,7 @@ struct TaskModel: Decodable {
     var date: String?
 }
 
-struct TasksResponse: Decodable {
+struct TasksResponse: Codable {
     let todos: [TaskModel]
     let total: Int
     let skip: Int

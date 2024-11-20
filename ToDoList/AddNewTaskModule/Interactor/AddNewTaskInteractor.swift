@@ -15,10 +15,14 @@ protocol AddNewTaskInteractorProtocol: AnyObject {
 
 final class AddNewTaskInteractor: AddNewTaskInteractorProtocol {
     weak var presenter: AddNewTaskPresenterProtocol?
+    let coreData: CoreDataStack
+    
+    init(coreData: CoreDataStack) {
+        self.coreData = coreData
+    }
     
     func saveTask(title: String, description: String) {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let context = appDelegate.persistentContainer.newBackgroundContext()
+        let context = coreData.newBackgroundContext()
         
         context.perform {
             let task = TaskEntity(context: context)

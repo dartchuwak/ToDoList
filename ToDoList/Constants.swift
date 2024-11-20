@@ -19,3 +19,7 @@ enum Images {
 enum Texts {
     static let mainTitle = "Задачи"
 }
+
+enum Endpoints {
+    static let todos = "https://dummyjson.com/todos"
+}

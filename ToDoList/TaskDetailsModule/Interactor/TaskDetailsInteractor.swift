@@ -15,10 +15,15 @@ protocol TaskDetailsInteractorProtocol {
 
 final class TaskDetailsInteractor: TaskDetailsInteractorProtocol {
     weak var presenter: TaskDetailsPresenterProtocol?
+    let coreData: CoreDataStack
+    
+    init(coreData: CoreDataStack) {
+        self.coreData = coreData
+    }
     
     func updateTask(task: TaskModel) {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let context = appDelegate.persistentContainer.newBackgroundContext()
+        
+        let context = coreData.newBackgroundContext()
         
         context.perform {
             let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()

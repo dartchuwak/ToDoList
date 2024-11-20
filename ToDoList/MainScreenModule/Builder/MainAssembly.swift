@@ -12,7 +12,9 @@ class MainAssembly {
     static func build() -> UIViewController {
         let view = MainScreenView()
         let presenter = MainScreenPresenter()
-        let interactor = MainScreenInteractor()
+        let coreData = CoreDataStack(modelName: "DoToList")
+        let networkService = NetworkService()
+        let interactor = MainScreenInteractor(coreData: coreData, networkService: networkService)
         let router = MainScreenRouter()
         
         view.presenter = presenter

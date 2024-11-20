@@ -18,13 +18,18 @@ protocol MainScreenInteractorProtocol {
 }
 
 final class MainScreenInteractor: MainScreenInteractorProtocol {
-    
-    let api: APIProtocol = API() // DI
+    private let networkService: NetworkServiceProtocol
+    private let coreData: CoreDataStackProtocol
     weak var presenter: MainScreenPresenterProtocol?
     private var todos: [TaskModel] = []
     
+    init(coreData: CoreDataStackProtocol, networkService: NetworkServiceProtocol) {
+        self.coreData = coreData
+        self.networkService = networkService
+    }
+    
     func fetchTasks() {
-        api.fetchData { [weak self] result in
+        networkService.fetchData(url: Endpoints.todos) { [weak self] result in
             switch result {
             case .success(let data):
                 let decoder = JSONDecoder()
@@ -41,16 +46,15 @@ final class MainScreenInteractor: MainScreenInteractorProtocol {
                         self?.presenter?.didFailToFetchTasks(error: error)
                     }
                 }
-            case .failure:
+            case .failure(let error):
+                self?.presenter?.didFailToFetchTasks(error: error)
                 return
             }
         }
     }
     
     private func saveFetchedTasks(tasks: [TaskModel]) {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let context = appDelegate.persistentContainer.newBackgroundContext()
-        
+        let context = coreData.newBackgroundContext()
         context.perform {
             for todo in tasks {
                 do {
@@ -71,8 +75,7 @@ final class MainScreenInteractor: MainScreenInteractorProtocol {
     }
     
     func loadTasks() {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let context = appDelegate.persistentContainer.newBackgroundContext()
+        let context = coreData.newBackgroundContext()
         context.perform {
             let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
             do {
@@ -99,19 +102,15 @@ final class MainScreenInteractor: MainScreenInteractorProtocol {
     }
     
     func updateTask(task: TaskModel) {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
-            print("Не удалось получить AppDelegate")
-            return
-        }
-        let context = appDelegate.persistentContainer.newBackgroundContext()
-        context.perform {
+        let backgroundContext = coreData.newBackgroundContext()
+        backgroundContext.perform {
             let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
             fetchRequest.predicate = NSPredicate(format: "id == %@", task.id.description)
             do {
-                let results = try context.fetch(fetchRequest)
+                let results = try backgroundContext.fetch(fetchRequest)
                 if let taskEntity = results.first {
                     taskEntity.completed = task.completed
-                    try context.save()
+                    try backgroundContext.save()
                 }
             } catch {
                 print(error)
@@ -120,8 +119,7 @@ final class MainScreenInteractor: MainScreenInteractorProtocol {
     }
     
     func performSearch(text: String) {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let backgroundContext = appDelegate.persistentContainer.newBackgroundContext()
+        let backgroundContext = coreData.newBackgroundContext()
         
         backgroundContext.perform {
             let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
@@ -151,8 +149,7 @@ final class MainScreenInteractor: MainScreenInteractorProtocol {
     }
     
     func deleteTask(task: TaskModel) {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        let backgroundContext = appDelegate.persistentContainer.newBackgroundContext()
+        let backgroundContext = coreData.newBackgroundContext()
         
         backgroundContext.perform {
             let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
