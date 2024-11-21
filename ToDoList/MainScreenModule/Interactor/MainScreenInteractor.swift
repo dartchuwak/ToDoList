@@ -88,7 +88,7 @@ final class MainScreenInteractor: MainScreenInteractorProtocol {
     
     func updateTask(task: TaskModel) {
         do {
-            try coreDataManager.updateTask(task)
+            try coreDataManager.updateTask(task: task)
         } catch {
             print("Failed to update task: \(error)")
         }

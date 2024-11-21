@@ -15,7 +15,7 @@ protocol AddNewTaskInteractorProtocol: AnyObject {
 
 final class AddNewTaskInteractor: AddNewTaskInteractorProtocol {
     weak var presenter: AddNewTaskPresenterProtocol?
-    let coreDataManager: CoreDataManager
+    private let coreDataManager: CoreDataManager
     
     init(coreDataManager: CoreDataManager) {
         self.coreDataManager = coreDataManager

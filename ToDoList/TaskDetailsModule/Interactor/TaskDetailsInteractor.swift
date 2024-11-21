@@ -15,31 +15,17 @@ protocol TaskDetailsInteractorProtocol {
 
 final class TaskDetailsInteractor: TaskDetailsInteractorProtocol {
     weak var presenter: TaskDetailsPresenterProtocol?
-    let coreData: CoreDataStack
+    let coreDataManager: CoreDataManagerProtocol
     
-    init(coreData: CoreDataStack) {
-        self.coreData = coreData
+    init(coreDataManager: CoreDataManagerProtocol) {
+        self.coreDataManager = coreDataManager
     }
     
     func updateTask(task: TaskModel) {
-        
-        let context = coreData.newBackgroundContext()
-        
-        context.perform {
-            let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
-            fetchRequest.predicate = NSPredicate(format: "id == %@", task.id.description)
-            do {
-                let results = try context.fetch(fetchRequest)
-                if let taskEntity = results.first {
-                    taskEntity.desc = task.description
-                    taskEntity.todo = task.todo
-                    try context.save()
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    self.presenter?.didFailToUpdateTask(error: error.localizedDescription)
-                }
-            }
+        do {
+            try coreDataManager.updateTask(task: task)
+        } catch {
+            presenter?.didFailToUpdateTask(error: error.localizedDescription)
         }
     }
 }

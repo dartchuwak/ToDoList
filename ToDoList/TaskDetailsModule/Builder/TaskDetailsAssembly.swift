@@ -15,7 +15,8 @@ class TaskDetailsAssembly {
         let view = TaskDetailsViewController()
         let presenter = TaskDetailsPresenter(task: task)
         let coreData = CoreDataStack(modelName: "DoToList")
-        let interactor = TaskDetailsInteractor(coreData: coreData)
+        let coreDataManager = CoreDataManager(coreDataStack: coreData)
+        let interactor = TaskDetailsInteractor(coreDataManager: coreDataManager)
         let router = TaskDetailsRouter()
         
         view.presenter = presenter
