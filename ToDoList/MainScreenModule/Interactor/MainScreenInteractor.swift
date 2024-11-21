@@ -22,10 +22,12 @@ final class MainScreenInteractor: MainScreenInteractorProtocol {
     private let coreData: CoreDataStackProtocol
     weak var presenter: MainScreenPresenterProtocol?
     private var todos: [TaskModel] = []
+    private let coreDataManager: CoreDataManagerProtocol
     
-    init(coreData: CoreDataStackProtocol, networkService: NetworkServiceProtocol) {
+    init(coreData: CoreDataStackProtocol, networkService: NetworkServiceProtocol, coreDataManager: CoreDataManagerProtocol) {
         self.coreData = coreData
         self.networkService = networkService
+        self.coreDataManager = coreDataManager
     }
     
     func fetchTasks() {
@@ -75,94 +77,38 @@ final class MainScreenInteractor: MainScreenInteractorProtocol {
     }
     
     func loadTasks() {
-        let context = coreData.newBackgroundContext()
-        context.perform {
-            let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
-            do {
-                let tasks = try context.fetch(fetchRequest)
-                let taskModels = tasks.map { taskEntity -> TaskModel in
-                    return TaskModel(
-                        id: taskEntity.id,
-                        description: taskEntity.desc,
-                        todo: taskEntity.todo ?? "",
-                        completed: taskEntity.completed,
-                        userId: taskEntity.userId,
-                        date: taskEntity.date ?? ""
-                    )
-                }
-                DispatchQueue.main.async {
-                    self.presenter?.didLoadTasks(tasks: taskModels)
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    self.presenter?.didFailToLoadTasks(error: error.localizedDescription)
-                }
-            }
+        do {
+            let taskEntities = try coreDataManager.fetchTasks()
+            let taskModels = taskEntities.map { TaskModel(from: $0) }
+            presenter?.didLoadTasks(tasks: taskModels)
+        } catch {
+            presenter?.didFailToLoadTasks(error: error.localizedDescription)
         }
     }
     
     func updateTask(task: TaskModel) {
-        let backgroundContext = coreData.newBackgroundContext()
-        backgroundContext.perform {
-            let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
-            fetchRequest.predicate = NSPredicate(format: "id == %@", task.id.description)
-            do {
-                let results = try backgroundContext.fetch(fetchRequest)
-                if let taskEntity = results.first {
-                    taskEntity.completed = task.completed
-                    try backgroundContext.save()
-                }
-            } catch {
-                print(error)
-            }
+        do {
+            try coreDataManager.updateTask(task)
+        } catch {
+            print("Failed to update task: \(error)")
         }
     }
     
     func performSearch(text: String) {
-        let backgroundContext = coreData.newBackgroundContext()
-        
-        backgroundContext.perform {
-            let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
-            fetchRequest.predicate = NSPredicate(format: "todo CONTAINS[cd] %@ OR desc CONTAINS[cd] %@", text, text)
-            
-            do {
-                let tasks = try backgroundContext.fetch(fetchRequest)
-                let taskModels = tasks.map { taskEntity -> TaskModel in
-                    return TaskModel(
-                        id: taskEntity.id,
-                        description: taskEntity.desc,
-                        todo: taskEntity.todo ?? "",
-                        completed: taskEntity.completed,
-                        userId: taskEntity.userId,
-                        date: taskEntity.date ?? Date().description
-                    )
-                }
-                DispatchQueue.main.async {
-                    self.presenter?.didSearchTasks(tasks: taskModels)
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    self.presenter?.didFailToLoadTasks(error: error.localizedDescription)
-                }
-            }
+        do {
+            let taskEntities = try coreDataManager.searchTasks(withText: text)
+            let taskModels = taskEntities.map { TaskModel(from: $0) }
+            presenter?.didSearchTasks(tasks: taskModels)
+        } catch {
+            presenter?.didFailToLoadTasks(error: error.localizedDescription)
         }
     }
     
     func deleteTask(task: TaskModel) {
-        let backgroundContext = coreData.newBackgroundContext()
-        
-        backgroundContext.perform {
-            let fetchRequest: NSFetchRequest<TaskEntity> = TaskEntity.fetchRequest()
-            fetchRequest.predicate = NSPredicate(format: "id == %@", task.id.description)
-            do {
-                let results = try backgroundContext.fetch(fetchRequest)
-                if let taskEntity = results.first {
-                    backgroundContext.delete(taskEntity)
-                    try backgroundContext.save()
-                }
-            } catch {
-                print(error)
-            }
+        do {
+            try coreDataManager.deleteTask(task)
+        } catch {
+            print("Failed to delete task: \(error)")
         }
     }
 }

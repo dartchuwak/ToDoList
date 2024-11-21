@@ -11,6 +11,7 @@ import CoreData
 protocol CoreDataStackProtocol {
     var mainContext: NSManagedObjectContext { get }
     func newBackgroundContext() -> NSManagedObjectContext
+    
 }
 
 class CoreDataStack: CoreDataStackProtocol {

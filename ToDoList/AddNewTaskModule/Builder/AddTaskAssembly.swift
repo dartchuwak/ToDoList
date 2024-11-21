@@ -12,8 +12,9 @@ final class AddNewTaskAssembly {
     static func build() -> UIViewController {
         let view = AddNewTaskScreenViewController()
         let presenter = AddNewTaskPresenter()
-        let coreData = CoreDataStack(modelName: "DoToList")
-        let interactor = AddNewTaskInteractor(coreData: coreData)
+        let coreDataStack = CoreDataStack(modelName: "DoToList")
+        let coreDataManager = CoreDataManager(coreDataStack: coreDataStack)
+        let interactor = AddNewTaskInteractor(coreDataManager: coreDataManager)
         let router = AddNewTaskRouter()
         view.presenter = presenter
         presenter.view = view

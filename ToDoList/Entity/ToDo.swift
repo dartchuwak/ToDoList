@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct TaskModel: Codable {
+struct TaskModel: Decodable {
     var id: Int16
     var description: String?
     var todo: String
@@ -16,9 +16,20 @@ struct TaskModel: Codable {
     var date: String?
 }
 
-struct TasksResponse: Codable {
+struct TasksResponse: Decodable {
     let todos: [TaskModel]
     let total: Int
     let skip: Int
     let limit: Int
+}
+
+extension TaskModel {
+    init(from entity: TaskEntity) {
+        self.id = Int16(entity.id) // Преобразуем Int16 в Int
+        self.description = entity.desc ?? "" // Проверяем, что это не nil
+        self.todo = entity.todo ?? ""
+        self.completed = entity.completed
+        self.userId = Int16(entity.userId) // Преобразуем Int16 в Int
+        self.date = entity.date ?? ""
+    }
 }

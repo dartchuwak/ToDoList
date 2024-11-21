@@ -120,6 +120,7 @@ final class MainScreenPresenter: MainScreenPresenterProtocol {
         let task = todos[index]
         todos.removeAll(where: {$0.id == task.id})
         view?.updateTableView(tasks: todos)
+        view?.updateTaskCountLabel(count: todos.count)
         interactor?.deleteTask(task: task)
     }
     

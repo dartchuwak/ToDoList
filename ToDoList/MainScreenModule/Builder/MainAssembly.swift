@@ -13,8 +13,9 @@ class MainAssembly {
         let view = MainScreenView()
         let presenter = MainScreenPresenter()
         let coreData = CoreDataStack(modelName: "DoToList")
+        let coreDataManager = CoreDataManager(coreDataStack: coreData)
         let networkService = NetworkService()
-        let interactor = MainScreenInteractor(coreData: coreData, networkService: networkService)
+        let interactor = MainScreenInteractor(coreData: coreData, networkService: networkService, coreDataManager: coreDataManager)
         let router = MainScreenRouter()
         
         view.presenter = presenter

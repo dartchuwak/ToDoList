@@ -15,35 +15,22 @@ protocol AddNewTaskInteractorProtocol: AnyObject {
 
 final class AddNewTaskInteractor: AddNewTaskInteractorProtocol {
     weak var presenter: AddNewTaskPresenterProtocol?
-    let coreData: CoreDataStack
+    let coreDataManager: CoreDataManager
     
-    init(coreData: CoreDataStack) {
-        self.coreData = coreData
+    init(coreDataManager: CoreDataManager) {
+        self.coreDataManager = coreDataManager
     }
     
     func saveTask(title: String, description: String) {
-        let context = coreData.newBackgroundContext()
-        
-        context.perform {
-            let task = TaskEntity(context: context)
-            let id = Int.random(in: 1...1000)
-            let date = Date()
-            let formatter = DateFormatter()
-            formatter.dateFormat = "dd/MM/yy"
-            let formattedDate = formatter.string(from: date)
-            task.id = Int16(id)
-            task.todo = title
-            task.desc = description
-            task.date = formattedDate
-            task.completed = false
-            do {
-                try context.save()
+        coreDataManager.saveTask(title: title, description: description) { [weak self] result in
+            switch result {
+            case .success:
                 DispatchQueue.main.async {
-                    self.presenter?.didSaveTask()
+                    self?.presenter?.didSaveTask()
                 }
-            } catch {
+            case .failure(let error):
                 DispatchQueue.main.async {
-                    self.presenter?.didFailToSaveTask(error: error.localizedDescription)
+                    self?.presenter?.didFailToSaveTask(error: error.localizedDescription)
                 }
             }
         }
