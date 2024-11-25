@@ -13,13 +13,16 @@ class MainScreenInteractorTests: XCTestCase {
     var mockNetworkService: MockNetworkService!
     var mockCoreDataStack: MockCoreDataStack!
     var mockPresenter: MockMainScreenPresenter!
+    var mockCoreDataManager: MockCOreDataManager!
     
     override func setUp() {
         super.setUp()
         mockNetworkService = MockNetworkService()
         mockCoreDataStack = MockCoreDataStack()
         mockPresenter = MockMainScreenPresenter()
-        interactor = MainScreenInteractor(coreData: mockCoreDataStack, networkService: mockNetworkService)
+        mockCoreDataManager = MockCOreDataManager()
+        
+        interactor = MainScreenInteractor(coreData: mockCoreDataStack, networkService: mockNetworkService, coreDataManager: mockCoreDataManager)
         interactor.presenter = mockPresenter
     }
     

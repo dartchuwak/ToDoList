@@ -33,3 +33,27 @@ class MockCoreDataStack: CoreDataStackProtocol {
         return persistentContainer.newBackgroundContext()
     }
 }
+
+final class MockCOreDataManager: CoreDataManagerProtocol {
+    func fetchTasks() throws -> [TaskEntity] {
+        return []
+    }
+    
+    func updateTask(task: TaskModel) throws {
+        
+    }
+    
+    func deleteTask(_ task: TaskModel) throws {
+        
+    }
+    
+    func searchTasks(withText text: String) throws -> [TaskEntity] {
+        []
+    }
+    
+    func saveTask(title: String, description: String, completion: @escaping (Result<Void, any Error>) -> Void) {
+        
+    }
+    
+    
+}
