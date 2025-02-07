@@ -8,7 +8,15 @@
       "comment" : "newTask"
     },
     "Ок" : {
-      "comment" : "addTask"
+      "comment" : "addTask",
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ок"
+          }
+        }
+      }
     },
     "Описание" : {
       "comment" : "newTask"
