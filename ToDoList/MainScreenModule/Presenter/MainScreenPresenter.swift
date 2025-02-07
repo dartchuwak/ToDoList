@@ -2,7 +2,7 @@
 //  MainScreenPresenter.swift
 //  DoToList
 //
-//  Created by Evgenii Mikhailov on 15.11.2024.
+//  Created by Evgenii Mikhailov on 05.02.2025.
 //
 
 import Foundation
@@ -32,7 +32,7 @@ final class MainScreenPresenter: MainScreenPresenterProtocol {
     var interactor: MainScreenInteractorProtocol?
     var router: MainScreenRouterProtocol?
     var todos: [TaskModel] = []
-    var allTasks: [TaskModel] = []
+    private var allTasks: [TaskModel] = []
     
     private func isFirstLaunch() -> Bool {
         let userDefaults = UserDefaults.standard

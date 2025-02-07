@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  DoToList
 //
-//  Created by Evgenii Mikhailov on 15.11.2024.
+//  Created by Evgenii Mikhailov on 05.02.2025.
 //
 
 import UIKit

@@ -2,7 +2,7 @@
 //  TaskDetailsAssembly.swift
 //  DoToList
 //
-//  Created by Evgenii Mikhailov on 15.11.2024.
+//  Created by Evgenii Mikhailov on 05.02.2025.
 //
 
 import Foundation
@@ -10,7 +10,7 @@ import Foundation
 import Foundation
 import UIKit
 
-class TaskDetailsAssembly {
+final class TaskDetailsAssembly {
     static func build(with task: TaskModel) -> UIViewController {
         let view = TaskDetailsViewController()
         let presenter = TaskDetailsPresenter(task: task)

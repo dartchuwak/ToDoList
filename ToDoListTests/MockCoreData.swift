@@ -9,7 +9,7 @@ import Foundation
 import CoreData
 
 
-class MockCoreDataStack: CoreDataStackProtocol {
+final class MockCoreDataStack: CoreDataStackProtocol {
     private let persistentContainer: NSPersistentContainer
     
     var mainContext: NSManagedObjectContext {

@@ -2,7 +2,7 @@
 //  API.swift
 //  DoToList
 //
-//  Created by Evgenii Mikhailov on 15.11.2024.
+//  Created by Evgenii Mikhailov on 05.02.2025.
 //
 
 import Foundation
@@ -11,7 +11,7 @@ protocol NetworkServiceProtocol {
     func fetchData(url: String, completion: @escaping (Result<Data, Error>) -> Void)
 }
 
-class NetworkService: NetworkServiceProtocol {
+final class NetworkService: NetworkServiceProtocol {
     private let session: URLSession
     
     init(session: URLSession = .shared) {

@@ -2,7 +2,7 @@
 //  ToDoCell.swift
 //  DoToList
 //
-//  Created by Evgenii Mikhailov on 15.11.2024.
+//  Created by Evgenii Mikhailov on 05.02.2025.
 //
 
 import Foundation
@@ -13,7 +13,7 @@ protocol TodoTableViewCellDelegate: AnyObject {
     func didTapStatusImage(at indexPath: IndexPath)
 }
 
-class TodoTableViewCell: UITableViewCell {
+final class TodoTableViewCell: UITableViewCell {
     weak var delegate: TodoTableViewCellDelegate?
     var indexPath: IndexPath?
     static let identifier: String = "TodoTableViewCell"

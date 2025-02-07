@@ -8,7 +8,7 @@
 import Foundation
 
 // Мок для MainScreenPresenterProtocol
-class MockMainScreenPresenter: MainScreenPresenterProtocol {
+final class MockMainScreenPresenter: MainScreenPresenterProtocol {
     var todos: [TaskModel] = []
     
     func fetchTasks() {}

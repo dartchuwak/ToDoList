@@ -2,7 +2,7 @@
 //  MainScreenView.swift
 //  DoToList
 //
-//  Created by Evgenii Mikhailov on 15.11.2024.
+//  Created by Evgenii Mikhailov on 05.02.2025.
 //
 
 import UIKit
@@ -15,7 +15,7 @@ protocol MainViewProtocol: AnyObject {
     func showError(error: String)
 }
 
-class MainScreenView: UIViewController {
+final class MainScreenView: UIViewController {
     var presenter: MainScreenPresenterProtocol?
     private var tableView: UITableView = {
         let tableView = UITableView()

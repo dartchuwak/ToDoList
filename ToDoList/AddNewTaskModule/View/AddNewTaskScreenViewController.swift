@@ -2,7 +2,7 @@
 //  AddNewTaskScreenViewController.swift
 //  DoToList
 //
-//  Created by Evgenii Mikhailov on 15.11.2024.
+//  Created by Evgenii Mikhailov on 05.02.2025.
 //
 
 import UIKit
@@ -14,7 +14,7 @@ protocol AddNewTaskViewProtocol: AnyObject {
     func setDate(date: String)
 }
 
-class AddNewTaskScreenViewController: UIViewController {
+final class AddNewTaskScreenViewController: UIViewController {
     
     var presenter: AddNewTaskPresenterProtocol?
     

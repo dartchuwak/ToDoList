@@ -2,7 +2,7 @@
 //  TaskDetailsInteractor.swift
 //  DoToList
 //
-//  Created by Evgenii Mikhailov on 15.11.2024.
+//  Created by Evgenii Mikhailov on 05.02.2025.
 //
 
 import Foundation
@@ -15,7 +15,7 @@ protocol TaskDetailsInteractorProtocol {
 
 final class TaskDetailsInteractor: TaskDetailsInteractorProtocol {
     weak var presenter: TaskDetailsPresenterProtocol?
-    let coreDataManager: CoreDataManagerProtocol
+    private let coreDataManager: CoreDataManagerProtocol
     
     init(coreDataManager: CoreDataManagerProtocol) {
         self.coreDataManager = coreDataManager

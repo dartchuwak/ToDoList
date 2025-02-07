@@ -2,7 +2,7 @@
 //  AddNewTaskScreenViewController.swift
 //  DoToList
 //
-//  Created by Evgenii Mikhailov on 15.11.2024.
+//  Created by Evgenii Mikhailov on 05.02.2025.
 //
 
 import UIKit
@@ -12,18 +12,18 @@ protocol TaskDetailsViewProtocol: AnyObject {
     func displayTask(_ task: TaskModel)
 }
 
-class TaskDetailsViewController: UIViewController {
+final class TaskDetailsViewController: UIViewController {
     
     var presenter: TaskDetailsPresenterProtocol?
     
-    let titleLabel: UITextField = {
+    private let titleLabel: UITextField = {
         let label = UITextField()
         label.textColor = UIColor(red: 0.955, green: 0.955, blue: 0.955, alpha: 1)
         label.font = UIFont.systemFont(ofSize: 34, weight: .bold)
         return label
     }()
     
-    let dateLabel: UILabel = {
+    private let dateLabel: UILabel = {
         var view = UILabel()
         view.frame = CGRect(x: 0, y: 0, width: 51, height: 16)
         view.alpha = 0.5
@@ -32,7 +32,7 @@ class TaskDetailsViewController: UIViewController {
         return view
     }()
     
-    let descriptionLabel: UITextView = {
+    private let descriptionLabel: UITextView = {
         var view = UITextView()
         view.frame = CGRect(x: 0, y: 0, width: 320, height: 66)
         view.textColor = UIColor(red: 0.955, green: 0.955, blue: 0.955, alpha: 1)

@@ -14,8 +14,8 @@ protocol CoreDataStackProtocol {
     
 }
 
-class CoreDataStack: CoreDataStackProtocol {
-    let persistentContainer: NSPersistentContainer
+final class CoreDataStack: CoreDataStackProtocol {
+    private let persistentContainer: NSPersistentContainer
     
     init(modelName: String) {
         persistentContainer = NSPersistentContainer(name: modelName)
